@@ -69,3 +69,23 @@ For example, for Chrome, run `open -n -a /Applications/Google\ Chrome.app/Conten
  to disable CORS.
 
 - If you get an error "Error: An error happened during communication with the replica: ... Connection refused", run `dfx start --clean` to start dfx.
+
+
+## [Repo Link](https://github.com/AirMug/ABiteOfICP.git)
+## Description: 
+This repo is a summary of our first bite of ICP, we extend the functionalities of the template such as a Canister that could keep track of its balance etc.
+
+## Track: Fully on-chain dapps
+## Team participants: 
+@AirMug, @MindCustom, @haojiahuojxust, @linliangmin
+
+## Mainnet canister link: 
+https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/
+
+## Feedback:
+## What you learned...
+ICP's advantages that could make full-apps on chain, even the storage!
+## Challenges...
+Not familiar with JS Language(and the devops setup is kind of a torture), A tight timeline to really #finish# Something, 
+## What you are proud of...
+Gained a deeper understanding of ICP and learned/practiced a new tech stack.

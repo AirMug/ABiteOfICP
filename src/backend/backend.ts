@@ -1,66 +1,40 @@
-import express from 'express';
-import { Server, ic, query, update, text } from 'azle';
-import {
-    HttpResponse,
-    HttpTransformArgs,
-} from 'azle/canisters/management';
+import { Canister, Principal, None, Some, ic, init, nat, update, query } from 'azle';
+import { Account, ICRC, TransferFromResult } from "azle/canisters/icrc";
 
+let icrc : typeof ICRC;
 
-export default Server(
-    () => {
-        const app = express();
-        app.use(express.json());
-
-        let phonebook = {
-            'Alice': { 'phone': '123-456-789', 'added': new Date() }
-        };
-
-        app.get('/contacts', (_req, res) => {
-            res.json(phonebook);
+export default Canister({
+    init: init([], () => {
+        icrc = ICRC(Principal.fromText(getCycleLedgerPrincipal()));
+    }),
+    balance: update([], nat, async () => {
+        return await ic.call(icrc.icrc1_balance_of, { args: [ owner_account() ]})
+    }),
+    deposit: update([nat], TransferFromResult, async (amount) => {
+        let fee = await ic.call(icrc.icrc1_fee, { args: [] });
+        if (amount <= fee) { ic.trap(`Balance must be greater than required fee ${fee}`) };
+        let result = await ic.call(icrc.icrc2_transfer_from, {
+            args: [{
+                spender_subaccount: None,
+                from: { owner: ic.caller(), subaccount: None },
+                to: owner_account(),
+                amount: amount - fee,
+                fee: Some(fee),
+                created_at_time: None,
+                memo: None,
+            }]
         });
+        return result
+    })
+})
 
-        app.post('/contacts/add', (req, res) => {
-            if (Object.keys(phonebook).includes(req.body.name)) {
-                res.json({ error: 'Name already exists' });
-            } else {
-                const contact = { [req.body.name]: { phone: req.body.phone, added: new Date() } };
-                phonebook = { ...phonebook, ...contact };
-                res.json({ status: 'Ok' });
-            }
-        });
+function owner_account() : Account {
+    return { owner: ic.id(), subaccount: None }
+}
 
-        app.get('/greet', (req, res) => {
-            res.json({ greeting: `Hello, ${req.query.name}` });
-        });
-
-        app.use(express.static('/dist'));
-        return app.listen();
-    },
-    {
-        price_oracle: update([text], text, async (pair) => {
-            return price(pair);
-        }),
-        transform: query([HttpTransformArgs], HttpResponse, (args) => {
-            return {
-                ...args.response,
-                headers: []
-            };
-        })
-    }
-);
-
-async function price(pair: string) {
-    ic.setOutgoingHttpOptions({
-        maxResponseBytes: 20_000n,
-        cycles: 500_000_000_000n,
-        transformMethodName: 'transform'
-    });
-
-    const timestamp = 1682978460; // May 1, 2023 22:01:00 GMT
-    const seconds = 60;
-    const response = await fetch(`https://api.exchange.coinbase.com/products/${pair}/candles?start=${timestamp}&end=${timestamp}&granularity=${seconds}`)
-
-    const responseText = await response.text();
-
-    return responseText;
+function getCycleLedgerPrincipal(): string {
+    return (
+        process.env.CANISTER_ID_CYCLE_LEDGER ??
+        ic.trap('process.env.CANISTER_ID_CYCLE_LEDGER is undefined')
+    );
 }

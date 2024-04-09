@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
-function App() {
-  const [greeting, setGreeting] = useState('');
+function CycleLedger() {
+  const [ledger, setLedger] = useState('');
 
   function handleSubmit(event) {
     event.preventDefault();
     const name = event.target.elements.name.value;
     fetch(`${import.meta.env.VITE_CANISTER_URL}/greet?name=${name}`)
       .then(response => response.json()).then((json) => {
-        setGreeting(json.greeting)
+        setLedger(json.greeting)
       });
   }
 

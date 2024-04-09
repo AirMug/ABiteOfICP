@@ -1,10 +1,16 @@
 {
     "canisters": {
+        "cycle-ledger": {
+            "type": "pull",
+            "id": "um5iw-rqaaa-aaaaq-qaaba-cai"
+        },
         "backend": {
+            "dependencies": [ "cycle-ledger" ],
+            "env": [ "CANISTER_ID_CYCLE_LEDGER" ],
             "type": "custom",
             "main": "src/backend/backend.ts",
             "candid": "src/backend/backend.did",
-            "build": "npx azle backend",
+            "build": "npx azle --native-compilation backend",
             "wasm": ".azle/backend/backend.wasm",
             "gzip": true,
             "assets": [
@@ -24,7 +30,7 @@
                     "content": "azle"
                 }
             ]
-        }
+        }  
     },
     "output_env_file": ".env"
 }
